@@ -1,13 +1,15 @@
 #include "game.h"
-#pragma once
-
-SDL_Texture* character;
-SDL_Rect srcR, destR;
-
+#include "texture.h"
+#include "game_object.h"
+#include "projectile.h"
+GameObject* character;
+SDL_Renderer* Game::renderer = nullptr;
+Projectile* projectile;
 Game::Game()
 {}
 Game::~Game()
 {}
+
 void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullScr) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
@@ -30,23 +32,22 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 				isRunning = false;
 			}
 			else
-			{
+			{	
 				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-				SDL_Surface* tempSurface = IMG_Load("assets/character.png");
-				character = SDL_CreateTextureFromSurface(renderer,tempSurface);
-				SDL_FreeSurface(tempSurface);
 			}
+			
+			character = new GameObject("assets/character.png",0,0);
 		}
 	}
 }
+
+
 void Game::update()
 {
 	cnt++;
-	destR.w = 300;
-	destR.h = 150;
-	destR.x = 32;
+	projectile->ProjectileUpdate();
+	character->Update();
 	std::cout << cnt << std::endl;
-
 }
 void Game::handleEvents()
 {
@@ -61,16 +62,18 @@ void Game::handleEvents()
 	}
 
 }
+void Game::render()
+{
+	SDL_RenderClear(renderer);
+	
+	character->Render();
+	SDL_RenderPresent(renderer);
+}
+
 void Game::clean()
 {
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	SDL_Quit();
 	std::cout << "Game cleaned" << std::endl;
-}
-void Game::render()
-{
-	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, character, NULL, &destR);
-	SDL_RenderPresent(renderer);
 }
