@@ -1,4 +1,3 @@
-#pragma once
 #include "texture.h"
 #include "game.h"
 SDL_Texture* TextureManager::loadTexture(const char* fileName)

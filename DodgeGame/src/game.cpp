@@ -1,10 +1,10 @@
 #include "game.h"
 #include "texture.h"
 #include "game_object.h"
-#include "projectile.h"
+
 GameObject* character;
 SDL_Renderer* Game::renderer = nullptr;
-Projectile* projectile;
+
 Game::Game()
 {}
 Game::~Game()
@@ -45,7 +45,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 void Game::update()
 {
 	cnt++;
-	projectile->ProjectileUpdate();
+	
 	character->Update();
 	std::cout << cnt << std::endl;
 }

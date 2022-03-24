@@ -1,7 +1,5 @@
-#pragma once
-#include "SDL.h"
-#include "texture.h"
-class GameObject {
+#include "game.h"
+class GameObject{
 public:
 	GameObject(const char* textureSheet,int x, int y);
 	~GameObject();

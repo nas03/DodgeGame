@@ -1,4 +1,3 @@
-#pragma once
 #include "game_object.h"
 #include "texture.h"
 #include "game.h"
