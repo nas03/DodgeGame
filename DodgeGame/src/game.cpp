@@ -1,23 +1,22 @@
 #include "game.h"
-#include "texture.h"
 #include "game_object.h"
-
-GameObject* character;
-SDL_Renderer* Game::renderer = nullptr;
+#include "const.h"
+#include "character.h"
+#include "time.h"
 
 Game::Game()
 {}
 Game::~Game()
 {}
 
-void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullScr) {
+bool Game::init() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
 		std::cout << "SDL cannot be initialized: " << SDL_GetError() << std::endl;
 	}
 	else
 	{
-		window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, fullScr);
+		window = SDL_CreateWindow("Dodge Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (window == NULL)
 		{
 			std::cout << "Window cannot be created: " << SDL_GetError() << std::endl;
@@ -25,29 +24,49 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 		}
 		else
 		{
-			renderer = SDL_CreateRenderer(window, -1, 0);
+			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 			if (renderer == NULL)
 			{
 				std::cout << "Renderer cannot be created: " << SDL_GetError() << std::endl;
 				isRunning = false;
 			}
-			else
-			{	
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			}
-			
-			character = new GameObject("assets/character.png",0,0);
 		}
 	}
+	return isRunning;
 }
 
+void Game::newGame()
+{
+	delete player;
+	player = new Character(renderer,"assets/character.png");
+}
 
 void Game::update()
 {
 	cnt++;
-	
-	character->Update();
+	handleInput();
+	player -> Render();
 	std::cout << cnt << std::endl;
+}
+void Game::handleInput()
+{
+	const Uint8* currentKeyState = SDL_GetKeyboardState(NULL);
+	if (currentKeyState[SDL_SCANCODE_A] || currentKeyState[SDL_SCANCODE_LEFT])
+	{
+		player->moveLeft();
+	}
+	if (currentKeyState[SDL_SCANCODE_D] || currentKeyState[SDL_SCANCODE_RIGHT])
+	{
+		player->moveRight();
+	}
+	if (currentKeyState[SDL_SCANCODE_S] || currentKeyState[SDL_SCANCODE_DOWN])
+	{
+		player -> moveDown();
+	}
+	if (currentKeyState[SDL_SCANCODE_W] || currentKeyState[SDL_SCANCODE_UP])
+	{
+		player -> moveUp();
+	}
 }
 void Game::handleEvents()
 {
@@ -64,12 +83,45 @@ void Game::handleEvents()
 }
 void Game::render()
 {
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
-	
-	character->Render();
+	player -> Render();
 	SDL_RenderPresent(renderer);
 }
+void Game::run()
+{
+	newGame();
+		while (1)
+	{
+		capTimer.start();
+		if (SDL_PollEvent(&e) != 0)
+		{
+			if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				break;
+			}
+		}
 
+		float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
+		if (avgFPS > 2000000)
+		{
+			avgFPS = 0;
+		}
+
+		update();
+		render();
+		++countedFrames;
+
+		int frameTicks = capTimer.getTicks();
+		if (frameTicks < SCREEN_TICKS_PER_FRAME)
+		{
+			SDL_Delay(SCREEN_TICKS_PER_FRAME - frameTicks);
+		}
+	}
+
+	clean();
+
+}
 void Game::clean()
 {
 	SDL_DestroyWindow(window);

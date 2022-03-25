@@ -1,16 +1,16 @@
-#include "game.h"
-class GameObject{
-public:
-	GameObject(const char* textureSheet,int x, int y);
-	~GameObject();
-	void Update();
-	void Render();
-private:
-	//Screen position
-	int xpos;
-	int ypos;
-	
-	SDL_Texture* objectTexture;
-	SDL_Rect srcRect, destRect;
-	SDL_Renderer* renderer ;
+#include <SDL.h>
+#include <SDL_image.h>
+#pragma once
+class GameObject
+{
+public: 
+    GameObject(SDL_Renderer * renderer);
+    ~GameObject();
+
+    float x;
+    float y;
+    float width;
+    float height;
+protected:
+    SDL_Renderer * renderer;
 };
