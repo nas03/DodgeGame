@@ -1,11 +1,13 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
+#include <stdlib.h>
 #include <math.h>
 #include <list>
 #include "character.h"
 #include "time.h"
 #include "fireball.h"
+#include "background.h"
 #pragma once
 
 class Game{
@@ -14,10 +16,11 @@ private:
 	int cnt = 0;
 	bool isRunning = true;
 	SDL_Renderer* renderer;
+	Background* background;
 	Character* player;
 	Fireball* fireball;
 	SDL_Event e;
-	std::list<Fireball*> firebalList;
+	std::list<Fireball*> fireballList;
 
 	Timer fpsTimer;
 	Timer capTimer;

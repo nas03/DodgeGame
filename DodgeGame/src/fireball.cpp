@@ -27,7 +27,7 @@ Fireball::Fireball(SDL_Renderer* renderer) : FlyingObject(renderer)
 
     x = rand() % SCREEN_WIDTH;
 	y = 0;
-	flySpeed = 10;
+	flySpeed = 5;
 
 	Box.w = 80;
 	Box.h = 60;
@@ -62,17 +62,18 @@ void Fireball::Update()
 
 void Fireball::Render()
 {
-    collisionRect.x = Box.x + 20;
-	collisionRect.y = Box.y + 20;
-	collisionRect.w = Box.w / 2;
-	collisionRect.h = Box.h / 2;
+    collisionRect.x = Box.x;
+	collisionRect.y = Box.y;
+	collisionRect.w = Box.w;
+	collisionRect.h = Box.h;
 
-	clip.x = 1;
-	clip.y = 1;
+	clip.x = 0;
+	clip.y = 0;
 	clip.w = 80;
 	clip.h = 60;
 
     SDL_RenderCopy(renderer, texture, &clip, &Box);
+    
 }
 
 void Fireball::getFireball()

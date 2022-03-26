@@ -10,6 +10,7 @@ Game::~Game()
 {}
 
 bool Game::init() {
+	srand(time(NULL));
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
 		std::cout << "SDL cannot be initialized: " << SDL_GetError() << std::endl;
@@ -38,11 +39,16 @@ bool Game::init() {
 void Game::newGame()
 {
 	delete player;
-	player = new Character(renderer,"assets/character.png");
-	fireballRate = 25;
+	background = new Background(renderer,"assets/background.jpeg");
+	player = new Character(renderer,"assets/player2.png");
+	fireballRate = 30;
 	if (countedFrames % fireballRate == 0)
 	{
 		fireball = new Fireball(renderer);
+	}
+	if (!fireballList.empty())
+	{
+		fireballList.erase(fireballList.begin(), fireballList.end());
 	}
 }
 
@@ -53,7 +59,7 @@ void Game::update()
 	if (countedFrames % fireballRate == 0)
 	{
 		fireball = new Fireball(renderer);
-		firebalList.push_back(fireball);
+		fireballList.push_back(fireball);
 	}
 	iterateList();
 	checkScreenCollisions(player);
@@ -96,17 +102,17 @@ void Game::render()
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
+	background -> Render();
 	player -> Render();
-	for ( Fireball* currentAsteroid : firebalList)
+
+	for(Fireball* currentFireball : fireballList)
 	{
-		currentAsteroid->Render();
+		currentFireball->Render();
 		//Check asteroid collision
-		if (currentAsteroid->checkCollision(
-			player->getMainCollider(), 
-			player->getLeftCollider(),
-			player->getRightCollider()))
+		if (currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider()))
 		{
 			newGame();
+			
 			return;
 		}
 	}
@@ -134,13 +140,13 @@ void Game::checkScreenCollisions(GameObject* obj)
 void Game::iterateList()
 {
 	std::list<Fireball*>::iterator currentFireball;
-	for (currentFireball = firebalList.begin(); currentFireball != firebalList.end(); currentFireball++)
+	for (currentFireball = fireballList.begin(); currentFireball != fireballList.end(); currentFireball++)
 	{
 		if ((*currentFireball)->Box.y > SCREEN_HEIGHT)
 		{
 			delete(*currentFireball);
 			currentFireball++;
-			firebalList.erase(firebalList.begin());
+			fireballList.erase(fireballList.begin());
 			
 		}
 		(*currentFireball)->Update();
@@ -161,7 +167,7 @@ void Game::run()
 		}
 
 		float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
-		if (avgFPS > 2000000)
+		if (avgFPS > 1000000000)
 		{
 			avgFPS = 0;
 		}
