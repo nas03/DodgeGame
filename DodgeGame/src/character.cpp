@@ -43,7 +43,7 @@ void Character::Render()
 	mainColliderRect.x = x + 25;
 	mainColliderRect.y = y;
 	mainColliderRect.h = height;
-	mainColliderRect.w = 50;
+	mainColliderRect.w = width;
 
 	leftColliderRect.x = x;
 	leftColliderRect.y = y + 50;

@@ -3,7 +3,7 @@
 #include "const.h"
 #include "character.h"
 #include "time.h"
-
+#include "fireball.h"
 Game::Game()
 {}
 Game::~Game()
@@ -39,13 +39,24 @@ void Game::newGame()
 {
 	delete player;
 	player = new Character(renderer,"assets/character.png");
+	fireballRate = 25;
+	if (countedFrames % fireballRate == 0)
+	{
+		fireball = new Fireball(renderer);
+	}
 }
 
 void Game::update()
 {
 	cnt++;
 	handleInput();
-	player -> Render();
+	if (countedFrames % fireballRate == 0)
+	{
+		fireball = new Fireball(renderer);
+		firebalList.push_back(fireball);
+	}
+	iterateList();
+	checkScreenCollisions(player);
 	std::cout << cnt << std::endl;
 }
 void Game::handleInput()
@@ -86,7 +97,54 @@ void Game::render()
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 	player -> Render();
+	for ( Fireball* currentAsteroid : firebalList)
+	{
+		currentAsteroid->Render();
+		//Check asteroid collision
+		if (currentAsteroid->checkCollision(
+			player->getMainCollider(), 
+			player->getLeftCollider(),
+			player->getRightCollider()))
+		{
+			newGame();
+			return;
+		}
+	}
 	SDL_RenderPresent(renderer);
+}
+void Game::checkScreenCollisions(GameObject* obj)
+{
+	if (obj->x + obj->width > SCREEN_WIDTH)
+	{
+		obj->x = SCREEN_WIDTH - obj->width;
+	}
+	if (obj->x < 0)
+	{
+		obj->x = 0;
+	}
+	if (obj->y + obj->height > SCREEN_HEIGHT)
+	{
+		obj->y = SCREEN_HEIGHT - obj->height;
+	}
+	if (obj->y < 0)
+	{
+		obj->y = 0;
+	}
+}
+void Game::iterateList()
+{
+	std::list<Fireball*>::iterator currentFireball;
+	for (currentFireball = firebalList.begin(); currentFireball != firebalList.end(); currentFireball++)
+	{
+		if ((*currentFireball)->Box.y > SCREEN_HEIGHT)
+		{
+			delete(*currentFireball);
+			currentFireball++;
+			firebalList.erase(firebalList.begin());
+			
+		}
+		(*currentFireball)->Update();
+	}
 }
 void Game::run()
 {
