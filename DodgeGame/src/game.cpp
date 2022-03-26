@@ -1,9 +1,5 @@
 #include "game.h"
-#include "game_object.h"
-#include "const.h"
-#include "character.h"
-#include "time.h"
-#include "fireball.h"
+
 Game::Game()
 {}
 Game::~Game()
@@ -33,14 +29,25 @@ bool Game::init() {
 			}
 		}
 	}
+	if (TTF_Init() < 0)
+	{
+		std::cout <<"TTF cannot be created: " <<SDL_GetError() <<std::endl;
+	}
 	return isRunning;
 }
 
 void Game::newGame()
 {
 	delete player;
+	delete text;
 	background = new Background(renderer,"assets/background.jpeg");
 	player = new Character(renderer,"assets/player2.png");
+	text = new Text (renderer);
+	if (score > bestScore)
+	{
+		bestScore = score;
+	}
+	score = 0;
 	fireballRate = 30;
 	if (countedFrames % fireballRate == 0)
 	{
@@ -85,30 +92,20 @@ void Game::handleInput()
 		player -> moveUp();
 	}
 }
-void Game::handleEvents()
-{
-	SDL_Event e;
-	SDL_PollEvent(&e);
-	switch (e.type){
-	case SDL_QUIT:
-		isRunning = false;
-		break;
-	default:
-		break;
-	}
-
-}
 void Game::render()
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 	background -> Render();
 	player -> Render();
-
+	text -> drawText("Score: ", 0,0,20);
+	text -> drawText(std::to_string(score),100,0,20);
+	text -> drawText("Best Score: ", 0,30,20);
+	text -> drawText(std::to_string(bestScore),100,30,20);
 	for(Fireball* currentFireball : fireballList)
 	{
 		currentFireball->Render();
-		//Check asteroid collision
+		
 		if (currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider()))
 		{
 			newGame();
@@ -147,7 +144,8 @@ void Game::iterateList()
 			delete(*currentFireball);
 			currentFireball++;
 			fireballList.erase(fireballList.begin());
-			
+			if (score >= bestScore) bestScore++;
+			score++;
 		}
 		(*currentFireball)->Update();
 	}
@@ -191,5 +189,7 @@ void Game::clean()
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	SDL_Quit();
+	TTF_Quit();
+	IMG_Quit();
 	std::cout << "Game cleaned" << std::endl;
 }

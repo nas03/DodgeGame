@@ -3,11 +3,15 @@
 #include <iostream>
 #include <stdlib.h>
 #include <math.h>
+#include <string>
+#include <string.h>
 #include <list>
 #include "character.h"
 #include "time.h"
 #include "fireball.h"
 #include "background.h"
+#include "text.h"
+#include "const.h"
 #pragma once
 
 class Game{
@@ -21,10 +25,13 @@ private:
 	Fireball* fireball;
 	SDL_Event e;
 	std::list<Fireball*> fireballList;
+	Text* text;
 
 	Timer fpsTimer;
 	Timer capTimer;
 
+	unsigned int score;
+	unsigned int bestScore;
 	unsigned int fireballRate;
 	unsigned int countedFrames;
 	float avgFPS;
@@ -33,7 +40,6 @@ public:
 	~Game();
 	bool init();
 	void newGame();
-	void handleEvents();
 	void checkScreenCollisions(GameObject* obj);
 	void iterateList();
 	void handleInput();
