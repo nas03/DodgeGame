@@ -1,7 +1,9 @@
 #include "game.h"
 
+
 Game::Game()
-{}
+{
+}
 Game::~Game()
 {}
 
@@ -33,6 +35,7 @@ bool Game::init() {
 	{
 		std::cout <<"TTF cannot be created: " <<SDL_GetError() <<std::endl;
 	}
+	
 	return isRunning;
 }
 
@@ -74,7 +77,7 @@ void Game::update()
 }
 void Game::handleInput()
 {
-	const Uint8* currentKeyState = SDL_GetKeyboardState(NULL);
+	const Uint8*currentKeyState = SDL_GetKeyboardState(NULL);
 	if (currentKeyState[SDL_SCANCODE_A] || currentKeyState[SDL_SCANCODE_LEFT])
 	{
 		player->moveLeft();
@@ -98,18 +101,21 @@ void Game::render()
 	SDL_RenderClear(renderer);
 	background -> Render();
 	player -> Render();
-	text -> drawText("Score: ", 0,0,20);
-	text -> drawText(std::to_string(score),100,0,20);
-	text -> drawText("Best Score: ", 0,30,20);
-	text -> drawText(std::to_string(bestScore),100,30,20);
+	if (pause == true)
+	{
+		menu -> Render();
+	}
+	text -> drawText("Score: ", 0,10,20);
+	text -> drawText(std::to_string(score),150,10,20);
+	text -> drawText("Best Score: ", 0,40,20);
+	text -> drawText(std::to_string(bestScore),150,40,20);
 	for(Fireball* currentFireball : fireballList)
 	{
 		currentFireball->Render();
 		
 		if (currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider()))
-		{
+		{	
 			newGame();
-			
 			return;
 		}
 	}
@@ -146,12 +152,20 @@ void Game::iterateList()
 			fireballList.erase(fireballList.begin());
 			if (score >= bestScore) bestScore++;
 			score++;
+			levelUp();
 		}
 		(*currentFireball)->Update();
 	}
 }
+void Game::levelUp()
+{
+	if (score > 1000) fireballRate = 5;
+	else if (score > 500 ) fireballRate = 15;
+	else if (score > 100) fireballRate = 20;
+}
 void Game::run()
 {
+
 	newGame();
 		while (1)
 	{
@@ -163,15 +177,23 @@ void Game::run()
 				break;
 			}
 		}
-
+		if (pause == false) update();
+		if (e.key.keysym.sym == SDLK_c)
+		{
+			pause = false;
+		}
+		if (e.key.keysym.sym == SDLK_p) 
+		{
+			pause = true;
+			menu = new Menu(renderer,"assets/pause.png");
+		}
+		render();
 		float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
 		if (avgFPS > 1000000000)
 		{
 			avgFPS = 0;
 		}
-
-		update();
-		render();
+		
 		++countedFrames;
 
 		int frameTicks = capTimer.getTicks();

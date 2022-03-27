@@ -7,7 +7,5 @@ int main(int argc, char* argv[])
 		{
 			game -> run();
 		}
-	
-	game->clean();
 	return 0;
 }

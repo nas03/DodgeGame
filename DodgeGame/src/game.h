@@ -12,26 +12,30 @@
 #include "background.h"
 #include "text.h"
 #include "const.h"
+#include "menu.h"
 #pragma once
 
 class Game{
 private:
-	SDL_Window* window;
+	SDL_Window* window = NULL;
 	int cnt = 0;
 	bool isRunning = true;
-	SDL_Renderer* renderer;
-	Background* background;
-	Character* player;
-	Fireball* fireball;
+	bool pause = false;
+	SDL_Renderer* renderer = NULL;
+	Background* background = NULL;
+	Character* player  = NULL;
+	Fireball* fireball  = NULL;
 	SDL_Event e;
 	std::list<Fireball*> fireballList;
-	Text* text;
+	Text* text= NULL;
+	Menu* menu;
+	
 
 	Timer fpsTimer;
 	Timer capTimer;
 
-	unsigned int score;
-	unsigned int bestScore;
+	int score = 0;
+	int bestScore = 0;
 	unsigned int fireballRate;
 	unsigned int countedFrames;
 	float avgFPS;
@@ -40,14 +44,15 @@ public:
 	~Game();
 	bool init();
 	void newGame();
+	void levelUp();
 	void checkScreenCollisions(GameObject* obj);
 	void iterateList();
 	void handleInput();
-	void clean();
 	void update();
 	void render();
 	void run();
-	bool running() { return isRunning;}
+	void clean();
+	
 
 	
 };
