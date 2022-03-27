@@ -74,3 +74,11 @@ void Character::moveDown()
 {
     y += 5;
 }
+double Character::getX()
+{
+    return x;
+}
+double Character::getY()
+{
+    return y;
+}

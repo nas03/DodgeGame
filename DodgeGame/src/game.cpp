@@ -48,11 +48,13 @@ void Game::newGame()
 {
 	delete player;
 	delete text;
-	background = new Background(renderer,"assets/background.jpeg");
+	missileCd = 30;
+	background = new Background(renderer,"assets/background.jpeg",0,0);
 	player = new Character(renderer,"assets/player2.png");
 	text = new Text (renderer);
-	
+	missile = new Missile(renderer,"assets/missile.png");
 	Mix_VolumeMusic(20);
+	audio ->playMusic("assets/newGame.wav");
 	music = Mix_LoadMUS("assets/spaceMusic.mp3");
 	if (music == NULL)
 	{
@@ -115,21 +117,47 @@ void Game::handleInput()
 		player -> moveUp();
 		audio ->playMusic("assets/shipMoving.wav");
 	}
+	if (currentKeyState[SDL_SCANCODE_M])
+	{
+		if (missileCd <= 0)
+		{
+			
+			boom = new Background(renderer,"assets/boom.png", SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
+			explode = true;
+			int tempScore = score;
+			int *nScore = &score;
+			newGame();
+			*nScore = tempScore;
+		}
+	}
 }
 void Game::render()
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 	background -> Render();
+	missile -> Render();
 	player -> Render();
 	if (pause == true)
 	{
 		menu -> Render();
 	}
+	if (explode)
+	{
+		boom -> Render();
+	}
 	text -> drawText("Score: ", 0,10,20);
 	text -> drawText(std::to_string(score),150,10,20);
 	text -> drawText("Best Score: ", 0,40,20);
 	text -> drawText(std::to_string(bestScore),150,40,20);
+	if(missileCd >= 0)
+	{
+		text -> drawText(std::to_string(missileCd),55,150,35);
+	}
+	else if (missileCd < 0)
+	{
+		text -> drawText("READY!",55,150,35);
+	}
 	for(Fireball* currentFireball : fireballList)
 	{
 		currentFireball->Render();
@@ -174,6 +202,7 @@ void Game::iterateList()
 			fireballList.erase(fireballList.begin());
 			if (score >= bestScore) bestScore++;
 			score++;
+			missileCd--;
 			levelUp();
 		}
 		(*currentFireball)->Update();
@@ -211,6 +240,11 @@ void Game::run()
 			menu = new Menu(renderer,"assets/pause.png");
 		}
 		render();
+		if (explode == true){
+			audio -> playMusic("assets/explosionSound.wav");
+			SDL_Delay(2000);
+		} 
+		explode = false;
 		float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
 		if (avgFPS > 1000000000)
 		{
@@ -236,5 +270,6 @@ void Game::clean()
 	SDL_Quit();
 	TTF_Quit();
 	IMG_Quit();
+	Mix_Quit();
 	std::cout << "Game cleaned" << std::endl;
 }

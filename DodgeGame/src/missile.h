@@ -4,12 +4,14 @@
 #include <iostream>
 #include "game_object.h"
 
-class Background : public GameObject
+
+class Missile : public GameObject
 {
 public:
-    Background(SDL_Renderer*renderer, const char* path,int x, int y);
-    ~Background();
+    Missile(SDL_Renderer*renderer, const char* path);
+    ~Missile();
     void Render();
+    void Update();
 private:
     SDL_Texture* texture;
     SDL_Surface* surface;

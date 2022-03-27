@@ -1,6 +1,6 @@
 #include "background.h"
 
-Background::Background(SDL_Renderer* renderer, const char* path) : GameObject(renderer)
+Background::Background(SDL_Renderer* renderer, const char* path,int xpos, int ypos) : GameObject(renderer)
 {
     surface = IMG_Load(path);
     if (surface == NULL)
@@ -16,10 +16,10 @@ Background::Background(SDL_Renderer* renderer, const char* path) : GameObject(re
         }
         SDL_FreeSurface(surface);
 
-        x = 0;
-	    y = 0;
-	    width = 1080;
-	    height = 560;
+        x = xpos;
+	    y = ypos;
+	    width = surface -> w;
+	    height = surface -> h;
     }
 }
 Background::~Background()
@@ -28,5 +28,10 @@ Background::~Background()
 }
 void Background::Render()
 {
-    SDL_RenderCopy(renderer,texture,NULL,NULL);
+    SDL_Rect desRect;
+    desRect.x = x;
+    desRect.y = y;
+    desRect.w = width;
+    desRect.h = height;
+    SDL_RenderCopy(renderer,texture,NULL,&desRect);
 }

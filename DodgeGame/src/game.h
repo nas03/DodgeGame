@@ -15,6 +15,7 @@
 #include "const.h"
 #include "menu.h"
 #include "music.h"
+#include "missile.h"
 #pragma once
 
 class Game{
@@ -23,10 +24,13 @@ private:
 	int cnt = 0;
 	bool isRunning = true;
 	bool pause = false;
+	bool explode = false;
 	SDL_Renderer* renderer = NULL;
 	Background* background = NULL;
 	Character* player  = NULL;
 	Fireball* fireball  = NULL;
+	Missile* missile = NULL;
+	Background* boom = NULL;
 	Mix_Music* music = NULL;
 	Music* audio;
 	SDL_Event e;
@@ -37,7 +41,7 @@ private:
 
 	Timer fpsTimer;
 	Timer capTimer;
-
+	int missileCd;
 	int score = 0;
 	int bestScore = 0;
 	unsigned int fireballRate;

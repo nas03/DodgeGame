@@ -11,7 +11,9 @@ public:
 	~Character();
 
 	void Render();
-
+	
+	double getX();
+	double getY();
 	
 	void moveLeft();
 	void moveRight();
