@@ -50,7 +50,7 @@ void Character::Render()
 	leftColliderRect.h = 40;
 	leftColliderRect.w = 25;
 
-	rightColliderRect.x = x+75;
+	rightColliderRect.x = x + 75;
 	rightColliderRect.y = y + 50;
 	rightColliderRect.h = 40;
 	rightColliderRect.w = 25;

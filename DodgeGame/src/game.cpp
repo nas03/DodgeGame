@@ -34,8 +34,13 @@ bool Game::init() {
 	if (TTF_Init() < 0)
 	{
 		std::cout <<"TTF cannot be created: " <<SDL_GetError() <<std::endl;
+		isRunning = false;
 	}
-	
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+		isRunning = false;
+	}
 	return isRunning;
 }
 
@@ -46,6 +51,18 @@ void Game::newGame()
 	background = new Background(renderer,"assets/background.jpeg");
 	player = new Character(renderer,"assets/player2.png");
 	text = new Text (renderer);
+	
+	Mix_VolumeMusic(20);
+	music = Mix_LoadMUS("assets/spaceMusic.mp3");
+	if (music == NULL)
+	{
+		std::cout << "Cant load music" <<Mix_GetError() <<std::endl;
+	}
+
+	if (Mix_PlayingMusic() == 0)
+	{
+		Mix_PlayMusic(music, -1);
+	}
 	if (score > bestScore)
 	{
 		bestScore = score;
@@ -81,18 +98,22 @@ void Game::handleInput()
 	if (currentKeyState[SDL_SCANCODE_A] || currentKeyState[SDL_SCANCODE_LEFT])
 	{
 		player->moveLeft();
+		audio ->playMusic("assets/shipMoving.wav");
 	}
 	if (currentKeyState[SDL_SCANCODE_D] || currentKeyState[SDL_SCANCODE_RIGHT])
 	{
 		player->moveRight();
+		audio ->playMusic("assets/shipMoving.wav");
 	}
 	if (currentKeyState[SDL_SCANCODE_S] || currentKeyState[SDL_SCANCODE_DOWN])
 	{
 		player -> moveDown();
+		audio ->playMusic("assets/shipMoving.wav");
 	}
 	if (currentKeyState[SDL_SCANCODE_W] || currentKeyState[SDL_SCANCODE_UP])
 	{
 		player -> moveUp();
+		audio ->playMusic("assets/shipMoving.wav");
 	}
 }
 void Game::render()
@@ -115,6 +136,7 @@ void Game::render()
 		
 		if (currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider()))
 		{	
+			audio ->playMusic("assets/hit.wav");
 			newGame();
 			return;
 		}
@@ -165,7 +187,6 @@ void Game::levelUp()
 }
 void Game::run()
 {
-
 	newGame();
 		while (1)
 	{
@@ -180,11 +201,13 @@ void Game::run()
 		if (pause == false) update();
 		if (e.key.keysym.sym == SDLK_c)
 		{
+			audio -> playMusic("assets/continue.wav");
 			pause = false;
 		}
 		if (e.key.keysym.sym == SDLK_p) 
 		{
 			pause = true;
+			audio -> playMusic("assets/pause.wav");
 			menu = new Menu(renderer,"assets/pause.png");
 		}
 		render();

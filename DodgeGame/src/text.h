@@ -9,7 +9,6 @@ class Text
 {
 public:
     Text(SDL_Renderer* renderer);
-    
     void drawText(std::string text, int x, int y, int fontSize);
 private:
     SDL_Renderer* renderer;

@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <iostream>
 #include <stdlib.h>
 #include <math.h>
@@ -13,6 +14,7 @@
 #include "text.h"
 #include "const.h"
 #include "menu.h"
+#include "music.h"
 #pragma once
 
 class Game{
@@ -25,6 +27,8 @@ private:
 	Background* background = NULL;
 	Character* player  = NULL;
 	Fireball* fireball  = NULL;
+	Mix_Music* music = NULL;
+	Music* audio;
 	SDL_Event e;
 	std::list<Fireball*> fireballList;
 	Text* text= NULL;
