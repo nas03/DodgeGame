@@ -25,6 +25,7 @@ private:
 	SDL_Renderer* renderer = NULL;
 	int cnt = 0;
 	bool isRunning = true;
+	bool runGame = false;
 	
 	//Game 
 	Background* background = NULL;
@@ -68,8 +69,13 @@ public:
 	Game();
 	~Game();
 	void gameMenu();
+	void howToPlay();
 	
 	bool init();
+	bool running()
+	{
+		return runGame;
+	}
 	void run();
 	
 	void newGame();

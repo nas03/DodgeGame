@@ -279,11 +279,13 @@ void Game::run()
 			}
 		}
 		if (pause == false) update();
+		//Continue game
 		if (e.key.keysym.sym == SDLK_c)
 		{
 			audio -> playMusic("assets/continue.wav");
 			pause = false;
 		}
+		//Pause game
 		if (e.key.keysym.sym == SDLK_p) 
 		{
 			pause = true;
@@ -291,11 +293,14 @@ void Game::run()
 			menu = new Menu(renderer,"assets/pause.png");
 		}
 		render();
+		//Delay when use missile
 		if (explode == true){
 			audio -> playMusic("assets/explosionSound.wav");
 			SDL_Delay(2000);
 		}
 		explode = false;
+		
+		//FPS
 		float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
 		if (avgFPS > 1000000000)
 		{
@@ -317,6 +322,27 @@ void Game::run()
 void Game::gameMenu()
 {
 	startMenu = new Background(renderer, "assets/startMenu.jpg",0,0);
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderClear(renderer);
+	startMenu -> Render();
+	SDL_RenderPresent(renderer);
+	const Uint8* choose = SDL_GetKeyboardState(NULL);
+	while(1)
+	{
+		if (SDL_PollEvent(&e) != 0)
+		{
+			if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				break;
+			}
+		}
+		if (choose[SDL_SCANCODE_Q])
+		{
+			runGame = true;
+			break;
+		}
+	}
+	
 }
 void Game::clean()
 {
