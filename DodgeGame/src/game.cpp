@@ -48,9 +48,12 @@ void Game::newGame()
 {
 	delete player;
 	delete text;
+	//Init var
 	missileCd = 30;
 	health = 3;
-	over = false;
+	score = 0;
+	fireballRate = 30;
+	//Create obj
 	background = new Background(renderer,"assets/background.jpeg",0,0);
 	player = new Character(renderer,"assets/player2.png");
 	text = new Text (renderer);
@@ -59,6 +62,7 @@ void Game::newGame()
 	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
 	healthBar2 = new Background(renderer, "assets/HEALTH2.png",130,200);
 	healthBar1 = new Background(renderer, "assets/HEALTH1.png",130,200);
+	//Create music
 	Mix_VolumeMusic(20);
 	audio ->playMusic("assets/newGame.wav");
 	music = Mix_LoadMUS("assets/spaceMusic.mp3");
@@ -66,21 +70,16 @@ void Game::newGame()
 	{
 		std::cout << "Cant load music" <<Mix_GetError() <<std::endl;
 	}
-
 	if (Mix_PlayingMusic() == 0)
 	{
 		Mix_PlayMusic(music, -1);
 	}
+	//update bestScore
 	if (score > bestScore)
 	{
 		bestScore = score;
 	}
-	score = 0;
-	fireballRate = 30;
-	if (countedFrames % fireballRate == 0)
-	{
-		fireball = new Fireball(renderer);
-	}
+	//Empty fireball list
 	if (!fireballList.empty())
 	{
 		fireballList.erase(fireballList.begin(), fireballList.end());
@@ -91,12 +90,14 @@ void Game::update()
 {
 	cnt++;
 	handleInput();
+	iterateList();
+	//Create Fireball
 	if (countedFrames % fireballRate == 0)
 	{
 		fireball = new Fireball(renderer);
 		fireballList.push_back(fireball);
 	}
-	iterateList();
+	
 	checkScreenCollisions(player);
 	std::cout << cnt << std::endl;
 }
@@ -123,6 +124,7 @@ void Game::handleInput()
 		player -> moveUp();
 		audio ->playMusic("assets/shipMoving.wav");
 	}
+	//If use missile
 	if (currentKeyState[SDL_SCANCODE_M])
 	{
 		if (missileCd <= 0)
@@ -143,25 +145,31 @@ void Game::render()
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
+	//Render necessary obj
 	background -> Render();
 	missile -> Render();
 	player -> Render();
+	//Render health bar
 	if (health == 3) healthBar3 -> Render();
 	if (health == 2) healthBar2 -> Render();
 	if (health == 1) healthBar1 -> Render();
+	//Render pause img
 	if (pause == true)
 	{
 		menu -> Render();
 	}
+	//Render missile explosion
 	if (explode)
 	{
 		boom -> Render();
 	}
+	//Render text
 	text -> drawText("Score: ", 20,10,20);
 	text -> drawText(std::to_string(score),170,10,20);
 	text -> drawText("Best Score: ", 20,40,20);
 	text -> drawText(std::to_string(bestScore),170,40,20);
 	text -> drawText("HEALTH: ",20,200,20);
+	//Render missile cd
 	if(missileCd >= 0)
 	{
 		text -> drawText(std::to_string(missileCd),55+30,115,35);
@@ -170,10 +178,10 @@ void Game::render()
 	{
 		text -> drawText("READY!",55+30,115,35);
 	}
+	//Render fireball + check if collide with character
 	for(Fireball* currentFireball : fireballList)
 	{
 		currentFireball->Render();
-		
 		if (currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider()))
 		{	
 			audio ->playMusic("assets/hit.wav");
@@ -204,6 +212,8 @@ void Game::render()
 			}
 		}
 	}
+	
+	
 	SDL_RenderPresent(renderer);
 }
 void Game::checkScreenCollisions(GameObject* obj)
@@ -230,13 +240,19 @@ void Game::iterateList()
 	std::list<Fireball*>::iterator currentFireball;
 	for (currentFireball = fireballList.begin(); currentFireball != fireballList.end(); currentFireball++)
 	{
+		//Delete fireball when fall out of screen
 		if ((*currentFireball)->Box.y > SCREEN_HEIGHT)
 		{
 			delete(*currentFireball);
 			currentFireball++;
 			fireballList.erase(fireballList.begin());
-			if (score >= bestScore) bestScore++;
+			//Update bestscore
+			if (score >= bestScore)
+			{
+				bestScore = score;
+			}
 			score++;
+			//missile cd  = score increment
 			missileCd--;
 			levelUp();
 		}
@@ -297,6 +313,10 @@ void Game::run()
 
 	clean();
 
+}
+void Game::gameMenu()
+{
+	startMenu = new Background(renderer, "assets/startMenu.jpg",0,0);
 }
 void Game::clean()
 {

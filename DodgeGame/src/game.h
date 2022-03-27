@@ -20,53 +20,69 @@
 
 class Game{
 private:
+	//Init
 	SDL_Window* window = NULL;
+	SDL_Renderer* renderer = NULL;
 	int cnt = 0;
 	bool isRunning = true;
-	bool pause = false;
-	bool explode = false;
-	bool over = false;
-	SDL_Renderer* renderer = NULL;
+	
+	//Game 
 	Background* background = NULL;
-	Character* player  = NULL;
-	Fireball* fireball  = NULL;
-	Missile* missile = NULL;
-	Background* boom = NULL;
+	Character * player     = NULL;
+	//Fireball
+	Fireball  * fireball   = NULL;
+	std::list<Fireball*> fireballList;
+	unsigned int fireballRate;
+	//Missile
+	Missile   * missile    = NULL;
+	Background* boom       = NULL;
+	bool explode = false;
+	int missileCd;
+	//Menu
+	Background* startMenu  = NULL;
+	//Health Bar
+	int health = 3;
 	Background* healthBar3 = NULL;
 	Background* healthBar2 = NULL;
 	Background* healthBar1 = NULL;
-	Background* gameOver  = NULL;
+	//Effect
+	Background* gameOver   = NULL;
+	Text	  * text	   = NULL;
+	Menu	  * menu;
+	bool pause = false;
+	//Music
 	Mix_Music* music = NULL;
 	Music* audio;
+	//Event
 	SDL_Event e;
-	std::list<Fireball*> fireballList;
-	Text* text= NULL;
-	Menu* menu;
-	
-
+	//Timer
 	Timer fpsTimer;
 	Timer capTimer;
-	int missileCd;
+	//Score
 	int score = 0;
 	int bestScore = 0;
-	int health = 3;
-	unsigned int fireballRate;
+	//FPS
 	unsigned int countedFrames;
 	float avgFPS;
 public:
 	Game();
 	~Game();
+	void gameMenu();
+	
 	bool init();
+	void run();
+	
 	void newGame();
+	
 	void levelUp();
 	void checkScreenCollisions(GameObject* obj);
-	void iterateList();
 	void handleInput();
+	void iterateList();
+	
+	
 	void update();
 	void render();
-	void run();
-	void clean();
 	
-
+	void clean();
 	
 };
