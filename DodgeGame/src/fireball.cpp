@@ -80,3 +80,7 @@ void Fireball::getFireball()
 {
     path = "assets/fireball.png";
 }
+void Fireball::levelUp()
+{
+    flySpeed += 5;
+}

@@ -14,6 +14,7 @@ public:
     void Update();
     void Render();
     void getFireball();
+    void levelUp();
 private:
     SDL_Texture* texture;
     SDL_Rect collisionRect;

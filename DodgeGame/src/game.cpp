@@ -210,9 +210,9 @@ void Game::iterateList()
 }
 void Game::levelUp()
 {
-	if (score > 1000) fireballRate = 5;
-	else if (score > 500 ) fireballRate = 15;
-	else if (score > 100) fireballRate = 20;
+	if (score > 500) fireballRate = 5;
+	else if (score > 100 ) fireballRate = 15;
+	else if (score > 50) fireballRate = 20;
 }
 void Game::run()
 {
