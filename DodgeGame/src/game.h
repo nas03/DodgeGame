@@ -25,6 +25,7 @@ private:
 	bool isRunning = true;
 	bool pause = false;
 	bool explode = false;
+	bool over = false;
 	SDL_Renderer* renderer = NULL;
 	Background* background = NULL;
 	Character* player  = NULL;
@@ -34,6 +35,7 @@ private:
 	Background* healthBar3 = NULL;
 	Background* healthBar2 = NULL;
 	Background* healthBar1 = NULL;
+	Background* gameOver  = NULL;
 	Mix_Music* music = NULL;
 	Music* audio;
 	SDL_Event e;

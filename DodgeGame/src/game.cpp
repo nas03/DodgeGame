@@ -49,15 +49,16 @@ void Game::newGame()
 	delete player;
 	delete text;
 	missileCd = 30;
+	health = 3;
+	over = false;
 	background = new Background(renderer,"assets/background.jpeg",0,0);
 	player = new Character(renderer,"assets/player2.png");
 	text = new Text (renderer);
 	missile = new Missile(renderer,"assets/missile.png");
-	health = 3;
-	healthBar3 = new Background(renderer, "assets/HEALTH3.png",150,250);
-	healthBar2 = new Background(renderer, "assets/HEALTH2.png",150,250);
-	healthBar1 = new Background(renderer, "assets/HEALTH1.png",150,250);
-
+	
+	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
+	healthBar2 = new Background(renderer, "assets/HEALTH2.png",130,200);
+	healthBar1 = new Background(renderer, "assets/HEALTH1.png",130,200);
 	Mix_VolumeMusic(20);
 	audio ->playMusic("assets/newGame.wav");
 	music = Mix_LoadMUS("assets/spaceMusic.mp3");
@@ -156,18 +157,18 @@ void Game::render()
 	{
 		boom -> Render();
 	}
-	text -> drawText("Score: ", 0,10,20);
-	text -> drawText(std::to_string(score),150,10,20);
-	text -> drawText("Best Score: ", 0,40,20);
-	text -> drawText(std::to_string(bestScore),150,40,20);
-	text -> drawText("HEALTH: ",0,250,30);
+	text -> drawText("Score: ", 20,10,20);
+	text -> drawText(std::to_string(score),170,10,20);
+	text -> drawText("Best Score: ", 20,40,20);
+	text -> drawText(std::to_string(bestScore),170,40,20);
+	text -> drawText("HEALTH: ",20,200,20);
 	if(missileCd >= 0)
 	{
-		text -> drawText(std::to_string(missileCd),55,150,35);
+		text -> drawText(std::to_string(missileCd),55+30,115,35);
 	}
 	else if (missileCd < 0)
 	{
-		text -> drawText("READY!",55,150,35);
+		text -> drawText("READY!",55+30,115,35);
 	}
 	for(Fireball* currentFireball : fireballList)
 	{
@@ -178,6 +179,12 @@ void Game::render()
 			audio ->playMusic("assets/hit.wav");
 			health--;
 			if (health <= 0){
+				audio -> playMusic("assets/gameOver.wav");
+				gameOver = new Background(renderer,"assets/gameOver.png",SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
+				SDL_RenderClear(renderer);
+				gameOver -> Render();
+				SDL_RenderPresent(renderer);
+				SDL_Delay(2000);
 				newGame();
 				return;
 			}
@@ -271,7 +278,7 @@ void Game::run()
 		if (explode == true){
 			audio -> playMusic("assets/explosionSound.wav");
 			SDL_Delay(2000);
-		} 
+		}
 		explode = false;
 		float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
 		if (avgFPS > 1000000000)

@@ -18,10 +18,10 @@ Missile::Missile(SDL_Renderer* renderer,const char* path) : GameObject(renderer)
         else
         {
             SDL_FreeSurface(surface);
-            x = 0;
-            y = 100;
-            width = 60;
-            height = 120;
+            x = 20;
+            y = 90;
+            width = 40;
+            height = 80;
         }
     }
 }
