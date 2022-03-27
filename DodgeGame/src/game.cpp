@@ -53,6 +53,11 @@ void Game::newGame()
 	player = new Character(renderer,"assets/player2.png");
 	text = new Text (renderer);
 	missile = new Missile(renderer,"assets/missile.png");
+	health = 3;
+	healthBar3 = new Background(renderer, "assets/HEALTH3.png",150,250);
+	healthBar2 = new Background(renderer, "assets/HEALTH2.png",150,250);
+	healthBar1 = new Background(renderer, "assets/HEALTH1.png",150,250);
+
 	Mix_VolumeMusic(20);
 	audio ->playMusic("assets/newGame.wav");
 	music = Mix_LoadMUS("assets/spaceMusic.mp3");
@@ -121,13 +126,15 @@ void Game::handleInput()
 	{
 		if (missileCd <= 0)
 		{
-			
 			boom = new Background(renderer,"assets/boom.png", SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
 			explode = true;
 			int tempScore = score;
 			int *nScore = &score;
+			int tempHealth = health;
+			int	*nHealth = &health;
 			newGame();
 			*nScore = tempScore;
+			*nHealth = tempHealth;
 		}
 	}
 }
@@ -138,6 +145,9 @@ void Game::render()
 	background -> Render();
 	missile -> Render();
 	player -> Render();
+	if (health == 3) healthBar3 -> Render();
+	if (health == 2) healthBar2 -> Render();
+	if (health == 1) healthBar1 -> Render();
 	if (pause == true)
 	{
 		menu -> Render();
@@ -150,6 +160,7 @@ void Game::render()
 	text -> drawText(std::to_string(score),150,10,20);
 	text -> drawText("Best Score: ", 0,40,20);
 	text -> drawText(std::to_string(bestScore),150,40,20);
+	text -> drawText("HEALTH: ",0,250,30);
 	if(missileCd >= 0)
 	{
 		text -> drawText(std::to_string(missileCd),55,150,35);
@@ -165,8 +176,25 @@ void Game::render()
 		if (currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider()))
 		{	
 			audio ->playMusic("assets/hit.wav");
-			newGame();
-			return;
+			health--;
+			if (health <= 0){
+				newGame();
+				return;
+			}
+			else
+			{
+				int tempHealth = health;
+				int	*nHealth = &health;
+				int tempScore = score;
+				int *nScore = &score;
+				int tempCd = missileCd;
+				int *nCd = &missileCd;
+				newGame();
+				*nHealth = tempHealth;
+				*nScore = tempScore;
+				*nCd = tempCd;
+				return;
+			}
 		}
 	}
 	SDL_RenderPresent(renderer);

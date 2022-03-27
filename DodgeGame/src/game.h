@@ -31,6 +31,9 @@ private:
 	Fireball* fireball  = NULL;
 	Missile* missile = NULL;
 	Background* boom = NULL;
+	Background* healthBar3 = NULL;
+	Background* healthBar2 = NULL;
+	Background* healthBar1 = NULL;
 	Mix_Music* music = NULL;
 	Music* audio;
 	SDL_Event e;
@@ -44,6 +47,7 @@ private:
 	int missileCd;
 	int score = 0;
 	int bestScore = 0;
+	int health = 3;
 	unsigned int fireballRate;
 	unsigned int countedFrames;
 	float avgFPS;
