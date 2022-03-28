@@ -425,7 +425,7 @@ void Game::howToPlay()
 {
 	delete text;
 	text = new Text(renderer);
-
+	Background* back = new Background(renderer,"assets/back.png",20,20);
 	while(1)
 	{
 		if (SDL_PollEvent(&e) != 0)
@@ -439,19 +439,20 @@ void Game::howToPlay()
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderClear(renderer);
 		
-		//Render text to screen
+		//Render 
+		back -> Render();
 		text -> drawText("Dodge the Fireball",350,260,30);
 		text -> drawText("Press M to fire the missile",300,310,30);
 		text -> drawText("Press P to pause",350,350,30);
 		text -> drawText("Press C to continue",330,390,30);
 		text -> drawText("Press ESC to quit",350,430,30);
-		text -> drawText("Return",20,20,30);
+		
 		SDL_RenderPresent(renderer);
 		
 		//Return to menu
 		Button* returnToMenuButton = new Button();
 		returnToMenuButton -> setPosition(20,20);
-		if (returnToMenuButton ->handleEvent(&e,250,30) && e.type == SDL_MOUSEBUTTONDOWN)
+		if (returnToMenuButton ->handleEvent(&e,210,117) && e.type == SDL_MOUSEBUTTONDOWN)
 		{
 			runGame = false;
 			runHowToPlay = false;	
