@@ -16,6 +16,7 @@
 #include "menu.h"
 #include "music.h"
 #include "missile.h"
+#include "button.h"
 #pragma once
 
 class Game{
@@ -26,7 +27,7 @@ private:
 	int cnt = 0;
 	bool isRunning = true;
 	bool runGame = false;
-	
+	bool runHowToPlay = false;
 	//Game 
 	Background* background = NULL;
 	Character * player     = NULL;
@@ -41,6 +42,7 @@ private:
 	int missileCd;
 	//Menu
 	Background* startMenu  = NULL;
+	Background* howToPlayBG = NULL;
 	//Health Bar
 	int health = 3;
 	Background* healthBar3 = NULL;
@@ -49,7 +51,8 @@ private:
 	//Effect
 	Background* gameOver   = NULL;
 	Text	  * text	   = NULL;
-	Menu	  * menu;
+	Menu	  * pauseGame = NULL;
+	Background	 * menu = NULL;
 	bool pause = false;
 	//Music
 	Mix_Music* music = NULL;
@@ -70,11 +73,15 @@ public:
 	~Game();
 	void gameMenu();
 	void howToPlay();
-	
+
 	bool init();
 	bool running()
 	{
 		return runGame;
+	}
+	bool howToPlayRunning()
+	{
+		return runHowToPlay;
 	}
 	void run();
 	

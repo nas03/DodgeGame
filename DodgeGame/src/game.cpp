@@ -15,7 +15,7 @@ bool Game::init() {
 	}
 	else
 	{
-		window = SDL_CreateWindow("Dodge Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("Space Mission", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (window == NULL)
 		{
 			std::cout << "Window cannot be created: " << SDL_GetError() << std::endl;
@@ -48,11 +48,13 @@ void Game::newGame()
 {
 	delete player;
 	delete text;
+	
 	//Init var
 	missileCd = 30;
 	health = 3;
 	score = 0;
 	fireballRate = 30;
+	
 	//Create obj
 	background = new Background(renderer,"assets/background.jpeg",0,0);
 	player = new Character(renderer,"assets/player2.png");
@@ -62,10 +64,12 @@ void Game::newGame()
 	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
 	healthBar2 = new Background(renderer, "assets/HEALTH2.png",130,200);
 	healthBar1 = new Background(renderer, "assets/HEALTH1.png",130,200);
+	
 	//Create music
 	Mix_VolumeMusic(20);
-	audio ->playMusic("assets/newGame.wav");
 	music = Mix_LoadMUS("assets/spaceMusic.mp3");
+	Mix_FadeInMusic(music,-1,2000);
+	audio ->playMusic("assets/newGame.wav");
 	if (music == NULL)
 	{
 		std::cout << "Cant load music" <<Mix_GetError() <<std::endl;
@@ -74,11 +78,13 @@ void Game::newGame()
 	{
 		Mix_PlayMusic(music, -1);
 	}
-	//update bestScore
-	if (score > bestScore)
+	
+	//Update best score
+	if(score > bestScore)
 	{
 		bestScore = score;
 	}
+	
 	//Empty fireball list
 	if (!fireballList.empty())
 	{
@@ -91,6 +97,7 @@ void Game::update()
 	cnt++;
 	handleInput();
 	iterateList();
+	
 	//Create Fireball
 	if (countedFrames % fireballRate == 0)
 	{
@@ -101,6 +108,7 @@ void Game::update()
 	checkScreenCollisions(player);
 	std::cout << cnt << std::endl;
 }
+
 void Game::handleInput()
 {
 	const Uint8*currentKeyState = SDL_GetKeyboardState(NULL);
@@ -124,6 +132,7 @@ void Game::handleInput()
 		player -> moveUp();
 		audio ->playMusic("assets/shipMoving.wav");
 	}
+	
 	//If use missile
 	if (currentKeyState[SDL_SCANCODE_M])
 	{
@@ -140,35 +149,43 @@ void Game::handleInput()
 			*nHealth = tempHealth;
 		}
 	}
+
 }
 void Game::render()
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
+	
 	//Render necessary obj
 	background -> Render();
 	missile -> Render();
 	player -> Render();
+	
 	//Render health bar
 	if (health == 3) healthBar3 -> Render();
 	if (health == 2) healthBar2 -> Render();
 	if (health == 1) healthBar1 -> Render();
+	
 	//Render pause img
 	if (pause == true)
 	{
+		pauseGame -> Render();
 		menu -> Render();
 	}
+	
 	//Render missile explosion
 	if (explode)
 	{
 		boom -> Render();
 	}
+	
 	//Render text
 	text -> drawText("Score: ", 20,10,20);
 	text -> drawText(std::to_string(score),170,10,20);
 	text -> drawText("Best Score: ", 20,40,20);
 	text -> drawText(std::to_string(bestScore),170,40,20);
 	text -> drawText("HEALTH: ",20,200,20);
+	
 	//Render missile cd
 	if(missileCd >= 0)
 	{
@@ -178,6 +195,7 @@ void Game::render()
 	{
 		text -> drawText("READY!",55+30,115,35);
 	}
+	
 	//Render fireball + check if collide with character
 	for(Fireball* currentFireball : fireballList)
 	{
@@ -189,10 +207,12 @@ void Game::render()
 			if (health <= 0){
 				audio -> playMusic("assets/gameOver.wav");
 				gameOver = new Background(renderer,"assets/gameOver.png",SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
+				
 				SDL_RenderClear(renderer);
 				gameOver -> Render();
 				SDL_RenderPresent(renderer);
 				SDL_Delay(2000);
+				
 				newGame();
 				return;
 			}
@@ -246,15 +266,18 @@ void Game::iterateList()
 			delete(*currentFireball);
 			currentFireball++;
 			fireballList.erase(fireballList.begin());
+			
 			//Update bestscore
 			if (score >= bestScore)
 			{
-				bestScore = score;
+				bestScore++;
 			}
 			score++;
+			
 			//missile cd  = score increment
 			missileCd--;
 			levelUp();
+
 		}
 		(*currentFireball)->Update();
 	}
@@ -267,6 +290,7 @@ void Game::levelUp()
 }
 void Game::run()
 {
+	
 	newGame();
 		while (1)
 	{
@@ -279,20 +303,42 @@ void Game::run()
 			}
 		}
 		if (pause == false) update();
+		
 		//Continue game
 		if (e.key.keysym.sym == SDLK_c)
 		{
 			audio -> playMusic("assets/continue.wav");
 			pause = false;
 		}
-		//Pause game
+		
+		//Pause game 
 		if (e.key.keysym.sym == SDLK_p) 
 		{
 			pause = true;
 			audio -> playMusic("assets/pause.wav");
-			menu = new Menu(renderer,"assets/pause.png");
+			pauseGame = new Menu(renderer,"assets/pause.png");
+			menu = new Background(renderer,"assets/menu.png",430,400);
 		}
+		
 		render();
+		
+		//Return to menu when pause
+		if (pause)
+		{
+			Button* toMenu = new Button();
+			toMenu ->setPosition(430,400);
+			if ((toMenu ->handleEvent(&e,200,100) == true) && e.type == SDL_MOUSEBUTTONDOWN)
+			{  
+				pause = false;
+				runGame = false;
+				runHowToPlay = false;	
+				gameMenu();
+				if (running()) run();
+				if (howToPlayRunning()) howToPlay();
+				break;
+			}
+		}
+		
 		//Delay when use missile
 		if (explode == true){
 			audio -> playMusic("assets/explosionSound.wav");
@@ -321,11 +367,25 @@ void Game::run()
 }
 void Game::gameMenu()
 {
-	startMenu = new Background(renderer, "assets/startMenu.jpg",0,0);
+	Mix_VolumeMusic(50);
+	music = Mix_LoadMUS("assets/menuMusic.mp3");
+	if (music == NULL)
+	{
+		std::cout <<"Cant load menu music: " <<SDL_GetError()<<std::endl;
+	}
+	if (Mix_PlayingMusic() == 0)
+	{
+		Mix_PlayMusic(music, -1);
+	}
+
+	startMenu = new Background(renderer, "assets/startMenu.png",0,0);
+	
+	//Render start menu
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 	startMenu -> Render();
 	SDL_RenderPresent(renderer);
+	
 	const Uint8* choose = SDL_GetKeyboardState(NULL);
 	while(1)
 	{
@@ -336,13 +396,71 @@ void Game::gameMenu()
 				break;
 			}
 		}
-		if (choose[SDL_SCANCODE_Q])
+		
+		//Play button
+		Button* play = new Button();
+		play -> setPosition(480, 380);
+		if (play ->handleEvent(&e,100,100) && e.type == SDL_MOUSEBUTTONDOWN)
 		{
+			audio -> playMusic("assets/click.wav");
+			Mix_FadeOutMusic(2000);
+			Mix_HaltMusic();
 			runGame = true;
 			break;
 		}
+		
+		//How to play button
+		Button* howPlay = new Button();
+		howPlay -> setPosition(320,380);
+		if (howPlay -> handleEvent(&e,100,100) && e.type == SDL_MOUSEBUTTONDOWN)
+		{
+			audio -> playMusic("assets/click.wav");
+			runHowToPlay = true;
+			howToPlayRunning();
+			break; 
+		}
 	}
-	
+}
+void Game::howToPlay()
+{
+	delete text;
+	text = new Text(renderer);
+
+	while(1)
+	{
+		if (SDL_PollEvent(&e) != 0)
+		{
+			if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				break;
+			}
+		}
+		
+		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		SDL_RenderClear(renderer);
+		
+		//Render text to screen
+		text -> drawText("Dodge the Fireball",350,260,30);
+		text -> drawText("Press M to fire the missile",300,310,30);
+		text -> drawText("Press P to pause",350,350,30);
+		text -> drawText("Press C to continue",330,390,30);
+		text -> drawText("Press ESC to quit",350,430,30);
+		text -> drawText("Return",20,20,30);
+		SDL_RenderPresent(renderer);
+		
+		//Return to menu
+		Button* returnToMenuButton = new Button();
+		returnToMenuButton -> setPosition(20,20);
+		if (returnToMenuButton ->handleEvent(&e,250,30) && e.type == SDL_MOUSEBUTTONDOWN)
+		{
+			runGame = false;
+			runHowToPlay = false;	
+			gameMenu();
+			if (running()) run();
+			if (howToPlayRunning()) howToPlay();
+			break;
+		}
+	}
 }
 void Game::clean()
 {

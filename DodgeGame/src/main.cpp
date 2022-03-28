@@ -7,6 +7,7 @@ int main(int argc, char* argv[])
 		{
 			game -> gameMenu();
 			if (game ->running() == true) game -> run();
+			else if (game ->howToPlayRunning() == true) game -> howToPlay();
 		}
 	return 0;
 }
