@@ -57,7 +57,14 @@ void Game::newGame()
 	
 	//Create obj
 	background = new Background(renderer,"assets/background.jpeg",0,0);
-	player = new Character(renderer,"assets/player2.png");
+	if (chooseCharacter == 1)
+	{
+		player = new Character(renderer,"assets/player.png");
+	}	
+	if (chooseCharacter == 2)
+	{
+		player = new Character(renderer,"assets/player2.png");
+	}
 	text = new Text (renderer);
 	missile = new Missile(renderer,"assets/missile.png");
 	
@@ -329,12 +336,15 @@ void Game::run()
 			toMenu ->setPosition(430,400);
 			if ((toMenu ->handleEvent(&e,200,100) == true) && e.type == SDL_MOUSEBUTTONDOWN)
 			{  
+				audio -> playMusic("assets/click.wav");
 				pause = false;
 				runGame = false;
-				runHowToPlay = false;	
+				runHowToPlay = false;
+				runChooseChar = false;
 				gameMenu();
 				if (running()) run();
 				if (howToPlayRunning()) howToPlay();
+				if (chooseCharRunning()) chooseChar();
 				break;
 			}
 		}
@@ -419,6 +429,16 @@ void Game::gameMenu()
 			howToPlayRunning();
 			break; 
 		}
+		//Choose skin button
+		Button* chooseSkin = new Button();
+		chooseSkin -> setPosition(10,10);
+		if (chooseSkin -> handleEvent(&e,45,45) && e.type == SDL_MOUSEBUTTONDOWN)
+		{
+			audio -> playMusic("assets/click.wav");
+			runChooseChar = true;
+			chooseChar();
+			break;
+		}
 	}
 }
 void Game::howToPlay()
@@ -454,11 +474,69 @@ void Game::howToPlay()
 		returnToMenuButton -> setPosition(20,20);
 		if (returnToMenuButton ->handleEvent(&e,210,117) && e.type == SDL_MOUSEBUTTONDOWN)
 		{
+			audio -> playMusic("assets/click.wav");
 			runGame = false;
 			runHowToPlay = false;	
+			runChooseChar = false;
 			gameMenu();
 			if (running()) run();
 			if (howToPlayRunning()) howToPlay();
+			if (chooseCharRunning()) chooseChar();
+			break;
+		}
+	}
+}
+void Game::chooseChar()
+{
+	Background* char1 = new Background(renderer, "assets/player.png",200,300);
+	Background* char2 = new Background(renderer, "assets/player2.png",650,300);
+	Background* back = new Background(renderer, "assets/back.png",20,20);
+	
+	
+	while(1)	
+	{
+		if(SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				break;
+			}
+		}
+		
+		SDL_SetRenderDrawColor(renderer,0,0,255,255);
+		SDL_RenderClear(renderer);
+		char1 -> Render();
+		char2 -> Render();
+		back -> Render();
+		SDL_RenderPresent(renderer);
+		
+		Button* choose1 = new Button();
+		Button* choose2 = new Button();
+		Button* backButton = new Button();
+		backButton -> setPosition(20,20);
+		choose1 -> setPosition(200,300);
+		choose2 -> setPosition(650,300);
+		
+		if (choose1 ->handleEvent(&e,200,200) && e.type == SDL_MOUSEBUTTONDOWN)
+		{
+			audio -> playMusic("assets/click.wav");
+			chooseCharacter = 1;
+		}
+		if (choose2 ->handleEvent(&e,200,200) && e.type == SDL_MOUSEBUTTONDOWN)
+		{
+			audio -> playMusic("assets/click.wav");
+			chooseCharacter = 2;
+		}
+		if (backButton -> handleEvent(&e,210,117) && e.type == SDL_MOUSEBUTTONDOWN)
+		{
+			audio -> playMusic("assets/click.wav");
+			runGame = false;
+			runHowToPlay = false;	
+			runChooseChar = false;
+			gameMenu();
+			if (running()) run();
+			if (howToPlayRunning()) howToPlay();
+			if (chooseCharRunning()) chooseChar();
 			break;
 		}
 	}

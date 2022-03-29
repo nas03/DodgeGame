@@ -28,6 +28,8 @@ private:
 	bool isRunning = true;
 	bool runGame = false;
 	bool runHowToPlay = false;
+	bool runChooseChar = false;
+	int chooseCharacter = 1;
 	//Game 
 	Background* background = NULL;
 	Character * player     = NULL;
@@ -73,7 +75,7 @@ public:
 	~Game();
 	void gameMenu();
 	void howToPlay();
-
+	void chooseChar();
 	bool init();
 	bool running()
 	{
@@ -82,6 +84,10 @@ public:
 	bool howToPlayRunning()
 	{
 		return runHowToPlay;
+	}
+	bool chooseCharRunning()
+	{
+		return runChooseChar;
 	}
 	void run();
 	
