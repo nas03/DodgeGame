@@ -14,6 +14,10 @@ public:
 	
 	double getX();
 	double getY();
+	void setSpeed(int speed)
+	{
+		this -> speed = speed;
+	}
 	
 	void moveLeft();
 	void moveRight();
@@ -29,5 +33,6 @@ private:
 	SDL_Rect renderRect;
 	SDL_Rect mainColliderRect;
 	SDL_Rect leftColliderRect;
-	SDL_Rect rightColliderRect; 
+	SDL_Rect rightColliderRect;
+	unsigned int speed;
 };

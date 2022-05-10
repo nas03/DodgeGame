@@ -57,20 +57,32 @@ void Game::newGame()
 	
 	//Create obj
 	background = new Background(renderer,"assets/background.jpeg",0,0);
+	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
+	healthBar2 = new Background(renderer, "assets/HEALTH2.png",130,200);
+	healthBar1 = new Background(renderer, "assets/HEALTH1.png",130,200);
+
 	if (chooseCharacter == 1)
 	{
 		player = new Character(renderer,"assets/player.png");
+		player -> setSpeed(10);
 	}	
 	if (chooseCharacter == 2)
 	{
 		player = new Character(renderer,"assets/player2.png");
+		player -> setSpeed(5);
+		addHealth = true;
 	}
+
+	if (addHealth)
+	{
+		health = 5;
+		healthBar4 = new Background(renderer, "assets/HEALTH4.png",130,200);
+		healthBar5 = new Background(renderer, "assets/HEALTH5.png",130,200);
+	}
+	else health = 3;
 	text = new Text (renderer);
 	missile = new Missile(renderer,"assets/missile.png");
 	
-	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
-	healthBar2 = new Background(renderer, "assets/HEALTH2.png",130,200);
-	healthBar1 = new Background(renderer, "assets/HEALTH1.png",130,200);
 	
 	//Create music
 	Mix_VolumeMusic(20);
@@ -97,6 +109,11 @@ void Game::newGame()
 	{
 		fireballList.erase(fireballList.begin(), fireballList.end());
 	}
+	//Empty invicible powerup
+	//if (!powerList.empty())
+	//{
+	//	powerList.erase(powerList.begin(), powerList.end());
+	//}
 }
 
 void Game::update()
@@ -111,7 +128,11 @@ void Game::update()
 		fireball = new Fireball(renderer);
 		fireballList.push_back(fireball);
 	}
-	
+	//if (countedFrames % powerRate == 0)
+	//{
+	//	powerRate = new Invincible(renderer);
+	//	powerList.push_back(power);
+	//}
 	checkScreenCollisions(player);
 	std::cout << cnt << std::endl;
 }
@@ -172,7 +193,8 @@ void Game::render()
 	if (health == 3) healthBar3 -> Render();
 	if (health == 2) healthBar2 -> Render();
 	if (health == 1) healthBar1 -> Render();
-	
+	if (health == 4) healthBar4 -> Render();
+	if (health == 5) healthBar5 -> Render();
 	//Render pause img
 	if (pause == true)
 	{
@@ -377,6 +399,7 @@ void Game::run()
 }
 void Game::gameMenu()
 {
+	std::cout << "game Menu: " << std::endl;
 	Mix_VolumeMusic(50);
 	music = Mix_LoadMUS("assets/menuMusic.mp3");
 	if (music == NULL)
@@ -443,6 +466,7 @@ void Game::gameMenu()
 }
 void Game::howToPlay()
 {
+	std::cout <<"How to play" << std::endl;
 	delete text;
 	text = new Text(renderer);
 	Background* back = new Background(renderer,"assets/back.png",20,20);
@@ -488,10 +512,12 @@ void Game::howToPlay()
 }
 void Game::chooseChar()
 {
+	text = new Text(renderer);
+	std::cout << "choose Char" << std::endl;
 	Background* char1 = new Background(renderer, "assets/player.png",200,300);
 	Background* char2 = new Background(renderer, "assets/player2.png",650,300);
 	Background* back = new Background(renderer, "assets/back.png",20,20);
-	
+
 	
 	while(1)	
 	{
@@ -508,6 +534,8 @@ void Game::chooseChar()
 		char1 -> Render();
 		char2 -> Render();
 		back -> Render();
+		text -> drawText("Increase Health",200,600,25);
+		text -> drawText("Increase Speed",650,600,25);
 		SDL_RenderPresent(renderer);
 		
 		Button* choose1 = new Button();

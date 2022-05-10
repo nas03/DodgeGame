@@ -37,6 +37,10 @@ private:
 	Fireball  * fireball   = NULL;
 	std::list<Fireball*> fireballList;
 	unsigned int fireballRate;
+	//Invincible
+	//Invincible* power = NULL;
+	//std::list<Invincible* > powerList;
+	//unsigned int powerRate;
 	//Missile
 	Missile   * missile    = NULL;
 	Background* boom       = NULL;
@@ -50,12 +54,16 @@ private:
 	Background* healthBar3 = NULL;
 	Background* healthBar2 = NULL;
 	Background* healthBar1 = NULL;
+	Background* healthBar4 = NULL;
+	Background* healthBar5 = NULL;
+
 	//Effect
 	Background* gameOver   = NULL;
 	Text	  * text	   = NULL;
 	Menu	  * pauseGame = NULL;
 	Background	 * menu = NULL;
 	bool pause = false;
+	bool addHealth = false;
 	//Music
 	Mix_Music* music = NULL;
 	Music* audio;

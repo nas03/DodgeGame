@@ -27,6 +27,8 @@ Character::Character(SDL_Renderer* renderer, const char* path):GameObject(render
 	y = SCREEN_HEIGHT * 0.80;
 	width = 80;
 	height = 80;
+
+    speed = 5;
 }
 Character::~Character()
 {
@@ -59,20 +61,20 @@ void Character::Render()
 
 void Character::moveLeft()
 {
-	x -= 5;
+	x -= speed;
 }
 
 void Character::moveRight()
 {
-	x += 5;
+	x += speed;
 }
 void Character::moveUp()
 {
-    y -= 5;
+    y -= speed;
 }
 void Character::moveDown()
 {
-    y += 5;
+    y += speed;
 }
 double Character::getX()
 {
