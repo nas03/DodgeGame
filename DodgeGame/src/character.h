@@ -14,6 +14,7 @@ public:
 	
 	double getX();
 	double getY();
+
 	void setSpeed(int speed)
 	{
 		this -> speed = speed;

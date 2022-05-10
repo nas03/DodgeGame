@@ -54,7 +54,7 @@ void Game::newGame()
 	health = 3;
 	score = 0;
 	fireballRate = 30;
-	
+	laserRate = 30;
 	//Create obj
 	background = new Background(renderer,"assets/background.jpeg",0,0);
 	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
@@ -109,18 +109,20 @@ void Game::newGame()
 	{
 		fireballList.erase(fireballList.begin(), fireballList.end());
 	}
-	//Empty invicible powerup
-	//if (!powerList.empty())
-	//{
-	//	powerList.erase(powerList.begin(), powerList.end());
-	//}
+	if (laserOn)
+	{
+		if (!laserList.empty())
+		{
+			laserList.erase(laserList.begin(), laserList.end());
+		}
+	}
 }
 
 void Game::update()
 {
 	cnt++;
 	handleInput();
-	iterateList();
+	
 	
 	//Create Fireball
 	if (countedFrames % fireballRate == 0)
@@ -128,11 +130,15 @@ void Game::update()
 		fireball = new Fireball(renderer);
 		fireballList.push_back(fireball);
 	}
-	//if (countedFrames % powerRate == 0)
-	//{
-	//	powerRate = new Invincible(renderer);
-	//	powerList.push_back(power);
-	//}
+	if (laserOn)
+	{
+		if (countedFrames % laserRate == 0)
+		{
+			laser = new Laser(renderer, (player -> getX())  , (player -> getY()));
+			laserList.push_back(laser);
+		}
+	}
+	iterateList();
 	checkScreenCollisions(player);
 	std::cout << cnt << std::endl;
 }
@@ -261,8 +267,11 @@ void Game::render()
 			}
 		}
 	}
-	
-	
+	//Render laser if turned on
+	for (Laser* currentLaser : laserList)
+	{
+		currentLaser -> Render();
+	}
 	SDL_RenderPresent(renderer);
 }
 void Game::checkScreenCollisions(GameObject* obj)
@@ -287,9 +296,21 @@ void Game::checkScreenCollisions(GameObject* obj)
 void Game::iterateList()
 {
 	std::list<Fireball*>::iterator currentFireball;
-	for (currentFireball = fireballList.begin(); currentFireball != fireballList.end(); currentFireball++)
+	std::list<Laser*>::iterator currentLaser;
+	for (currentFireball = fireballList.begin(); currentFireball != fireballList.end();currentFireball++)
 	{
 		//Delete fireball when fall out of screen
+		for (currentLaser = laserList.begin(); currentLaser != laserList.end(); currentLaser++)
+		{
+			if ((*currentFireball) -> checkCollision((*currentLaser) -> getMainCollider(),(*currentLaser) -> getLeftCollider(),(*currentLaser) -> getRightCollider()))
+			{
+				delete(*currentFireball);
+				fireballList.erase(currentFireball++);
+				delete(*currentLaser);
+				laserList.erase(currentLaser++);
+			}
+			
+		}
 		if ((*currentFireball)->Box.y > SCREEN_HEIGHT)
 		{
 			delete(*currentFireball);
@@ -308,7 +329,13 @@ void Game::iterateList()
 			levelUp();
 
 		}
+		
+		
 		(*currentFireball)->Update();
+	}
+	for (currentLaser = laserList.begin(); currentLaser != laserList.end(); currentLaser++)
+	{
+		(*currentLaser) -> Update();
 	}
 }
 void Game::levelUp()
@@ -331,6 +358,7 @@ void Game::run()
 				break;
 			}
 		}
+		render();
 		if (pause == false) update();
 		
 		//Continue game
@@ -349,7 +377,7 @@ void Game::run()
 			menu = new Background(renderer,"assets/menu.png",430,400);
 		}
 		
-		render();
+		
 		
 		//Return to menu when pause
 		if (pause)

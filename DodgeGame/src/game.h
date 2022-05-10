@@ -17,6 +17,7 @@
 #include "music.h"
 #include "missile.h"
 #include "button.h"
+#include "laser.h"
 #pragma once
 
 class Game{
@@ -37,10 +38,10 @@ private:
 	Fireball  * fireball   = NULL;
 	std::list<Fireball*> fireballList;
 	unsigned int fireballRate;
-	//Invincible
-	//Invincible* power = NULL;
-	//std::list<Invincible* > powerList;
-	//unsigned int powerRate;
+	//Laser
+	Laser* laser = NULL;
+	std::list<Laser*> laserList;
+	unsigned int laserRate;
 	//Missile
 	Missile   * missile    = NULL;
 	Background* boom       = NULL;
@@ -64,6 +65,7 @@ private:
 	Background	 * menu = NULL;
 	bool pause = false;
 	bool addHealth = false;
+	bool laserOn = true;
 	//Music
 	Mix_Music* music = NULL;
 	Music* audio;
@@ -100,6 +102,7 @@ public:
 	void run();
 	
 	void newGame();
+	
 	
 	void levelUp();
 	void checkScreenCollisions(GameObject* obj);
