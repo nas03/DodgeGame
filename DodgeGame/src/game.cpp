@@ -12,7 +12,7 @@ bool Game::init() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
 		std::cout << "SDL cannot be initialized: " << SDL_GetError() << std::endl;
-	}
+	} 
 	else
 	{
 		window = SDL_CreateWindow("Space Mission", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -50,11 +50,13 @@ void Game::newGame()
 	delete text;
 	
 	//Init var
-	missileCd = 30;
+	missileCd = 50;
+	invincibleCd = 100;
+	invincibleTime = 10;
 	health = 3;
 	score = 0;
 	fireballRate = 30;
-	laserRate = 30;
+	Iactive = false;
 	//Create obj
 	background = new Background(renderer,"assets/background.jpeg",0,0);
 	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
@@ -82,7 +84,7 @@ void Game::newGame()
 	else health = 3;
 	text = new Text (renderer);
 	missile = new Missile(renderer,"assets/missile.png");
-	
+	invincible = new Invincible(renderer, "assets/invincible.png");
 	
 	//Create music
 	Mix_VolumeMusic(20);
@@ -109,18 +111,12 @@ void Game::newGame()
 	{
 		fireballList.erase(fireballList.begin(), fireballList.end());
 	}
-	if (laserOn)
-	{
-		if (!laserList.empty())
-		{
-			laserList.erase(laserList.begin(), laserList.end());
-		}
-	}
+	
 }
 
 void Game::update()
 {
-	cnt++;
+	
 	handleInput();
 	
 	
@@ -130,17 +126,9 @@ void Game::update()
 		fireball = new Fireball(renderer);
 		fireballList.push_back(fireball);
 	}
-	if (laserOn)
-	{
-		if (countedFrames % laserRate == 0)
-		{
-			laser = new Laser(renderer, (player -> getX())  , (player -> getY()));
-			laserList.push_back(laser);
-		}
-	}
+	
 	iterateList();
 	checkScreenCollisions(player);
-	std::cout << cnt << std::endl;
 }
 
 void Game::handleInput()
@@ -183,7 +171,13 @@ void Game::handleInput()
 			*nHealth = tempHealth;
 		}
 	}
-
+	if(currentKeyState[SDL_SCANCODE_I])
+	{
+		if (invincibleCd <= 0)
+		{
+			Iactive = true;
+		}
+	}
 }
 void Game::render()
 {
@@ -194,7 +188,7 @@ void Game::render()
 	background -> Render();
 	missile -> Render();
 	player -> Render();
-	
+	invincible -> Render();
 	//Render health bar
 	if (health == 3) healthBar3 -> Render();
 	if (health == 2) healthBar2 -> Render();
@@ -230,48 +224,66 @@ void Game::render()
 	{
 		text -> drawText("READY!",55+30,115,35);
 	}
-	
+	//Render invi cd
+	if(invincibleCd >= 0)
+	{
+		text -> drawText(std::to_string(invincibleCd),150,250,35);
+	}
+	else if (invincibleCd < 0)
+	{
+		text -> drawText("READY!",150,250,35);
+	}
 	//Render fireball + check if collide with character
 	for(Fireball* currentFireball : fireballList)
 	{
 		currentFireball->Render();
-		if (currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider()))
+		if ((currentFireball->checkCollision(player->getMainCollider(), player->getLeftCollider(), player->getRightCollider())) )
 		{	
-			audio ->playMusic("assets/hit.wav");
-			health--;
-			if (health <= 0){
-				audio -> playMusic("assets/gameOver.wav");
-				gameOver = new Background(renderer,"assets/gameOver.png",SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
-				
-				SDL_RenderClear(renderer);
-				gameOver -> Render();
-				SDL_RenderPresent(renderer);
-				SDL_Delay(2000);
-				
-				newGame();
-				return;
+				if (Iactive)
+				{
+					int tempScore = score;
+					int *nScore = &score;
+					int tempHealth = health;
+					int	*nHealth = &health;
+					newGame();
+					*nScore = tempScore;
+					*nHealth = tempHealth;
+					return;
+				}
+				else if (!Iactive)
+				{
+					audio ->playMusic("assets/hit.wav");
+					health--;
+					if (health <= 0){
+						audio -> playMusic("assets/gameOver.wav");
+						gameOver = new Background(renderer,"assets/gameOver.png",SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
+
+						SDL_RenderClear(renderer);
+						gameOver -> Render();
+						SDL_RenderPresent(renderer);
+						SDL_Delay(2000);
+						newGame();
+						return;
+					}
+					else if (health > 0)
+					{
+						int tempHealth = health;
+						int	*nHealth = &health;
+						int tempScore = score;
+						int *nScore = &score;
+						int tempCd = missileCd;
+						int *nCd = &missileCd;
+						
+						newGame();
+						*nHealth = tempHealth;
+						*nScore = tempScore;
+						*nCd = tempCd;
+						return;
+					}
+				}
 			}
-			else
-			{
-				int tempHealth = health;
-				int	*nHealth = &health;
-				int tempScore = score;
-				int *nScore = &score;
-				int tempCd = missileCd;
-				int *nCd = &missileCd;
-				newGame();
-				*nHealth = tempHealth;
-				*nScore = tempScore;
-				*nCd = tempCd;
-				return;
-			}
-		}
 	}
-	//Render laser if turned on
-	for (Laser* currentLaser : laserList)
-	{
-		currentLaser -> Render();
-	}
+	
 	SDL_RenderPresent(renderer);
 }
 void Game::checkScreenCollisions(GameObject* obj)
@@ -296,21 +308,10 @@ void Game::checkScreenCollisions(GameObject* obj)
 void Game::iterateList()
 {
 	std::list<Fireball*>::iterator currentFireball;
-	std::list<Laser*>::iterator currentLaser;
 	for (currentFireball = fireballList.begin(); currentFireball != fireballList.end();currentFireball++)
 	{
 		//Delete fireball when fall out of screen
-		for (currentLaser = laserList.begin(); currentLaser != laserList.end(); currentLaser++)
-		{
-			if ((*currentFireball) -> checkCollision((*currentLaser) -> getMainCollider(),(*currentLaser) -> getLeftCollider(),(*currentLaser) -> getRightCollider()))
-			{
-				delete(*currentFireball);
-				fireballList.erase(currentFireball++);
-				delete(*currentLaser);
-				laserList.erase(currentLaser++);
-			}
-			
-		}
+		
 		if ((*currentFireball)->Box.y > SCREEN_HEIGHT)
 		{
 			delete(*currentFireball);
@@ -326,6 +327,7 @@ void Game::iterateList()
 			
 			//missile cd  = score increment
 			missileCd--;
+			invincibleCd--;
 			levelUp();
 
 		}
@@ -333,10 +335,7 @@ void Game::iterateList()
 		
 		(*currentFireball)->Update();
 	}
-	for (currentLaser = laserList.begin(); currentLaser != laserList.end(); currentLaser++)
-	{
-		(*currentLaser) -> Update();
-	}
+	
 }
 void Game::levelUp()
 {
@@ -358,8 +357,9 @@ void Game::run()
 				break;
 			}
 		}
+				if (pause == false) update();
+
 		render();
-		if (pause == false) update();
 		
 		//Continue game
 		if (e.key.keysym.sym == SDLK_c)
@@ -515,9 +515,10 @@ void Game::howToPlay()
 		back -> Render();
 		text -> drawText("Dodge the Fireball",350,260,30);
 		text -> drawText("Press M to fire the missile",300,310,30);
-		text -> drawText("Press P to pause",350,350,30);
-		text -> drawText("Press C to continue",330,390,30);
-		text -> drawText("Press ESC to quit",350,430,30);
+		text -> drawText("Press I to be Invincible", 350,350,30);
+		text -> drawText("Press P to pause",350,390,30);
+		text -> drawText("Press C to continue",330,430,30);
+		text -> drawText("Press ESC to quit",350,470,30);
 		
 		SDL_RenderPresent(renderer);
 		
@@ -562,8 +563,8 @@ void Game::chooseChar()
 		char1 -> Render();
 		char2 -> Render();
 		back -> Render();
-		text -> drawText("Increase Health",200,600,25);
-		text -> drawText("Increase Speed",650,600,25);
+		text -> drawText("Increase Speed",200,600,25);
+		text -> drawText("Increase Health",650,600,25);
 		SDL_RenderPresent(renderer);
 		
 		Button* choose1 = new Button();
