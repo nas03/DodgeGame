@@ -51,7 +51,7 @@ void Game::newGame()
 	
 	//Init var
 	missileCd = 50;
-	invincibleCd = 100;
+	invincibleCd = 20;
 	invincibleTime = 10;
 	health = 3;
 	score = 0;
@@ -498,6 +498,7 @@ void Game::howToPlay()
 	delete text;
 	text = new Text(renderer);
 	Background* back = new Background(renderer,"assets/back.png",20,20);
+	Background* bg = new Background(renderer, "assets/cosmic.jpg",0,0);
 	while(1)
 	{
 		if (SDL_PollEvent(&e) != 0)
@@ -512,6 +513,7 @@ void Game::howToPlay()
 		SDL_RenderClear(renderer);
 		
 		//Render 
+		bg -> Render();
 		back -> Render();
 		text -> drawText("Dodge the Fireball",350,260,30);
 		text -> drawText("Press M to fire the missile",300,310,30);
@@ -546,7 +548,7 @@ void Game::chooseChar()
 	Background* char1 = new Background(renderer, "assets/player.png",200,300);
 	Background* char2 = new Background(renderer, "assets/player2.png",650,300);
 	Background* back = new Background(renderer, "assets/back.png",20,20);
-
+	Background* bg = new Background(renderer, "assets/cosmic.jpg",0,0);
 	
 	while(1)	
 	{
@@ -560,11 +562,13 @@ void Game::chooseChar()
 		
 		SDL_SetRenderDrawColor(renderer,0,0,255,255);
 		SDL_RenderClear(renderer);
+		bg -> Render();
 		char1 -> Render();
 		char2 -> Render();
 		back -> Render();
-		text -> drawText("Increase Speed",200,600,25);
-		text -> drawText("Increase Health",650,600,25);
+		
+		text -> drawText("Increase Speed",180,560,25);
+		text -> drawText("Increase Health",630,560,25);
 		SDL_RenderPresent(renderer);
 		
 		Button* choose1 = new Button();

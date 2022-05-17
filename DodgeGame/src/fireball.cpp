@@ -2,7 +2,7 @@
 #include "const.h"
 Fireball::Fireball(SDL_Renderer* renderer) : FlyingObject(renderer)
 {
-    getFireball();
+    path = "assets/fireball.png";
 
     SDL_Surface* surface = IMG_Load(path);
     if (surface == NULL)
@@ -76,7 +76,3 @@ void Fireball::Render()
     
 }
 
-void Fireball::getFireball()
-{
-    path = "assets/fireball.png";
-}
