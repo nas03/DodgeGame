@@ -9,12 +9,12 @@ class Fireball : public FlyingObject
 public:
     Fireball(SDL_Renderer* renderer);
     ~Fireball();
-
+    Fireball(SDL_Renderer* renderer, int xpos, int ypos);
     bool checkCollision(SDL_Rect * mainCollider, SDL_Rect* leftCollider, SDL_Rect * rightCollider);
     void Update();
     void Render();
-    void getFireball();
-    
+    int getX();
+    int getY();
 private:
     SDL_Texture* texture;
     SDL_Rect collisionRect;

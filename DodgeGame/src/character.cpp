@@ -30,6 +30,36 @@ Character::Character(SDL_Renderer* renderer, const char* path):GameObject(render
 
     speed = 5;
 }
+Character::Character(SDL_Renderer* renderer, int xpos, int ypos,const char* path):GameObject(renderer)
+{
+    SDL_Surface* surface = IMG_Load(path);
+    if (surface == NULL)
+    {
+        std::cout <<"Cant load character surface: " <<SDL_GetError()<<std::endl;
+    }
+    else
+    {
+        SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface -> format, 69, 69, 69));
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        if (texture == NULL)
+        {
+            std::cout <<"Cant load character texture: " <<SDL_GetError() <<std::endl;
+        }
+        else
+        {
+            renderRect.h = surface -> h;
+            renderRect.w = surface -> w;
+        }
+    }
+    SDL_FreeSurface(surface);
+    
+    x = xpos;
+	y = ypos;
+	width = 80;
+	height = 80;
+
+    speed = 5;
+}
 Character::~Character()
 {
     SDL_DestroyTexture(texture);

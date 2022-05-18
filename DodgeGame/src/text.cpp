@@ -36,3 +36,5 @@ void Text::drawText(std::string text, int x, int y, int fontSize)
 	SDL_FreeSurface(surface);
 	TTF_CloseFont(font);
 }
+Text::~Text()
+{}

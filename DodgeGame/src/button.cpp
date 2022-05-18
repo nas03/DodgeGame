@@ -3,7 +3,8 @@
 Button::Button()
 {}
 Button::~Button()
-{}
+{
+}
 void Button::setPosition(int x, int y)
 {
     mousePos.x = x;

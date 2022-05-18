@@ -18,6 +18,8 @@
 #include "missile.h"
 #include "button.h"
 #include "invincible.h"
+#include "save_game.h"
+#include <map>
 #pragma once
 
 class Game{
@@ -65,6 +67,10 @@ private:
 	Text	  * text	   = NULL;
 	Menu	  * pauseGame = NULL;
 	Background	 * menu = NULL;
+	Background * saved = NULL;
+	SaveGame* save ;
+	int haveSaved;
+	int loadSaveGame;
 	bool pause = false;
 	bool addHealth = false;
 	//Music
@@ -77,7 +83,7 @@ private:
 	Timer capTimer;
 	//Score
 	int score = 0;
-	int bestScore = 0;
+	int bestScore;
 	//FPS
 	unsigned int countedFrames;
 	float avgFPS;
@@ -87,6 +93,7 @@ public:
 	void gameMenu();
 	void howToPlay();
 	void chooseChar();
+	void saveGame();
 	bool init();
 	bool running()
 	{
@@ -103,7 +110,7 @@ public:
 	void run();
 	
 	void newGame();
-	
+	void loadSavedGame();
 	
 	void levelUp();
 	void checkScreenCollisions(GameObject* obj);

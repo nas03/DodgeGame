@@ -8,6 +8,8 @@ class Character : public GameObject
 {
 public:
     Character(SDL_Renderer* renderer, const char* path);
+	Character(SDL_Renderer* renderer, int xpos, int ypos, const char* path);
+
 	~Character();
 
 	void Render();

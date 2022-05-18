@@ -57,6 +57,7 @@ void Game::newGame()
 	score = 0;
 	fireballRate = 30;
 	Iactive = false;
+	bestScore = save -> getMaxScore();
 	//Create obj
 	background = new Background(renderer,"assets/background.jpeg",0,0);
 	healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
@@ -101,9 +102,9 @@ void Game::newGame()
 	}
 	
 	//Update best score
-	if(score > bestScore)
+	if(score >= bestScore)
 	{
-		bestScore = score;
+		bestScore++;
 	}
 	
 	//Empty fireball list
@@ -111,14 +112,79 @@ void Game::newGame()
 	{
 		fireballList.erase(fireballList.begin(), fireballList.end());
 	}
+	save -> writeHaveSaved(0);
 	
+}
+
+void Game::loadSavedGame()
+{
+	delete player;
+	delete text;
+	//Init var
+	std::vector <int> effect = save -> getEffect();
+	chooseCharacter = effect[1];
+	missileCd = effect[3];
+	invincibleCd = effect[4];
+	invincibleTime = effect[5];
+	health = effect[2];
+	score = effect[0];
+	fireballRate = 30;
+	Iactive = false;
+	bestScore = save -> getMaxScore();
+	//Create obj
+	background = new Background(renderer,"assets/background.jpeg",0,0);
+	if (health == 1) healthBar1 = new Background(renderer, "assets/HEALTH1.png",130,200);
+	if (health == 3) healthBar3 = new Background(renderer, "assets/HEALTH3.png",130,200);
+	if (health == 2) healthBar2 = new Background(renderer, "assets/HEALTH2.png",130,200);
+	if (health == 4) healthBar4 = new Background(renderer, "assets/HEALTH4.png",130,200);
+	if (health == 5) healthBar5 = new Background(renderer, "assets/HEALTH5.png",130,200);
+
+	text = new Text (renderer);
+	missile = new Missile(renderer,"assets/missile.png");
+	invincible = new Invincible(renderer, "assets/invincible.png");
+	
+	//Create music
+	Mix_VolumeMusic(20);
+	music = Mix_LoadMUS("assets/spaceMusic.mp3");
+	Mix_FadeInMusic(music,-1,2000);
+	audio ->playMusic("assets/newGame.wav");
+	if (music == NULL)
+	{
+		std::cout << "Cant load music" <<Mix_GetError() <<std::endl;
+	}
+	if (Mix_PlayingMusic() == 0)
+	{
+		Mix_PlayMusic(music, -1);
+	}
+	//getData
+	std::vector <int> playerPos = save -> getPlayer();
+	std::vector < std::vector <int> > fireballPos = save -> getFireball();
+	if (chooseCharacter == 1)
+	{
+		player = new Character(renderer, playerPos[0],playerPos[1],"assets/player.png");
+		player -> setSpeed(10);
+	}	
+	if (chooseCharacter == 2)
+	{
+		player = new Character(renderer, playerPos[0],playerPos[1],"assets/player2.png");
+		player -> setSpeed(5);
+		addHealth = true;
+	}
+	if (!fireballList.empty())
+	{
+		fireballList.erase(fireballList.begin(), fireballList.end());
+	}
+	for (int i = 0 ; i < fireballPos.size(); i++)
+	{
+		fireball = new Fireball(renderer, fireballPos[i][0] , fireballPos[i][1]);
+		fireballList.push_back(fireball);
+	}
 }
 
 void Game::update()
 {
 	
 	handleInput();
-	
 	
 	//Create Fireball
 	if (countedFrames % fireballRate == 0)
@@ -154,7 +220,6 @@ void Game::handleInput()
 		player -> moveUp();
 		audio ->playMusic("assets/shipMoving.wav");
 	}
-	
 	//If use missile
 	if (currentKeyState[SDL_SCANCODE_M])
 	{
@@ -162,13 +227,8 @@ void Game::handleInput()
 		{
 			boom = new Background(renderer,"assets/boom.png", SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
 			explode = true;
-			int tempScore = score;
-			int *nScore = &score;
-			int tempHealth = health;
-			int	*nHealth = &health;
-			newGame();
-			*nScore = tempScore;
-			*nHealth = tempHealth;
+			saveGame();
+			loadSavedGame();
 		}
 	}
 	if(currentKeyState[SDL_SCANCODE_I])
@@ -200,6 +260,7 @@ void Game::render()
 	{
 		pauseGame -> Render();
 		menu -> Render();
+		saved -> Render();
 	}
 	
 	//Render missile explosion
@@ -241,13 +302,8 @@ void Game::render()
 		{	
 				if (Iactive)
 				{
-					int tempScore = score;
-					int *nScore = &score;
-					int tempHealth = health;
-					int	*nHealth = &health;
-					newGame();
-					*nScore = tempScore;
-					*nHealth = tempHealth;
+					saveGame();
+					loadSavedGame();
 					return;
 				}
 				else if (!Iactive)
@@ -256,13 +312,14 @@ void Game::render()
 					health--;
 					if (health <= 0){
 						audio -> playMusic("assets/gameOver.wav");
+						save -> writeScore(bestScore);
 						gameOver = new Background(renderer,"assets/gameOver.png",SCREEN_WIDTH/2 - 300,SCREEN_HEIGHT/2-200);
-
 						SDL_RenderClear(renderer);
 						gameOver -> Render();
 						SDL_RenderPresent(renderer);
 						SDL_Delay(2000);
 						newGame();
+						bestScore = save -> getMaxScore();
 						return;
 					}
 					else if (health > 0)
@@ -273,11 +330,12 @@ void Game::render()
 						int *nScore = &score;
 						int tempCd = missileCd;
 						int *nCd = &missileCd;
-						
+						save -> writeScore(bestScore);
 						newGame();
 						*nHealth = tempHealth;
 						*nScore = tempScore;
 						*nCd = tempCd;
+						bestScore = save -> getMaxScore();
 						return;
 					}
 				}
@@ -321,7 +379,7 @@ void Game::iterateList()
 			//Update bestscore
 			if (score >= bestScore)
 			{
-				bestScore++;
+				bestScore++ ;
 			}
 			score++;
 			
@@ -345,8 +403,14 @@ void Game::levelUp()
 }
 void Game::run()
 {
-	
-	newGame();
+	haveSaved = save -> getHaveSaved();
+	if(haveSaved == 1 && loadSaveGame == 1)loadSavedGame();
+	else
+	{
+		newGame();
+		haveSaved = 1;
+		loadSaveGame = 0;
+	}
 		while (1)
 	{
 		capTimer.start();
@@ -375,6 +439,7 @@ void Game::run()
 			audio -> playMusic("assets/pause.wav");
 			pauseGame = new Menu(renderer,"assets/pause.png");
 			menu = new Background(renderer,"assets/menu.png",430,400);
+			saved = new Background(renderer, "assets/save.png",510,500);
 		}
 		
 		
@@ -383,6 +448,8 @@ void Game::run()
 		if (pause)
 		{
 			Button* toMenu = new Button();
+			Button* saveButton = new Button();
+			saveButton -> setPosition(510, 500);
 			toMenu ->setPosition(430,400);
 			if ((toMenu ->handleEvent(&e,200,100) == true) && e.type == SDL_MOUSEBUTTONDOWN)
 			{  
@@ -396,6 +463,11 @@ void Game::run()
 				if (howToPlayRunning()) howToPlay();
 				if (chooseCharRunning()) chooseChar();
 				break;
+			}
+			if ((saveButton -> handleEvent(&e,60,60) == true) && e.type == SDL_MOUSEBUTTONDOWN)
+			{
+				audio -> playMusic("assets/click.wav");
+				saveGame();
 			}
 		}
 		
@@ -463,6 +535,7 @@ void Game::gameMenu()
 		play -> setPosition(480, 380);
 		if (play ->handleEvent(&e,100,100) && e.type == SDL_MOUSEBUTTONDOWN)
 		{
+			save -> writeHaveSaved(0);
 			audio -> playMusic("assets/click.wav");
 			Mix_FadeOutMusic(2000);
 			Mix_HaltMusic();
@@ -488,6 +561,16 @@ void Game::gameMenu()
 			audio -> playMusic("assets/click.wav");
 			runChooseChar = true;
 			chooseChar();
+			break;
+		}
+		Button* playSavedgame = new Button();
+		playSavedgame -> setPosition(645,380);
+		int canPlay = save -> getHaveSaved();
+		if (playSavedgame -> handleEvent(&e,100,100) && e.type == SDL_MOUSEBUTTONDOWN && canPlay == 1)
+		{
+			audio -> playMusic("assets/click.wav");
+			loadSaveGame = 1;
+			runGame = true;
 			break;
 		}
 	}
@@ -602,10 +685,29 @@ void Game::chooseChar()
 		}
 	}
 }
+
+void Game::saveGame()
+{
+	
+	std::vector <std::vector <int> > fireballMap;
+	int id = 0;
+	for(Fireball* currentFireball : fireballList)
+	{
+		fireballMap.push_back(std::vector <int> ());
+		fireballMap[id].push_back(currentFireball -> getX());
+		fireballMap[id].push_back(currentFireball -> getY());
+		id++;
+	}
+	save -> writeFireball(fireballMap);
+	save -> writePlayer(player -> getX(), player -> getY());
+	save -> writeEffect(score,chooseCharacter, health, missileCd, invincibleCd, invincibleTime);
+	save -> writeScore(bestScore);
+	save -> writeHaveSaved(1);
+}
 void Game::clean()
 {
-	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
 	SDL_Quit();
 	TTF_Quit();
 	IMG_Quit();
